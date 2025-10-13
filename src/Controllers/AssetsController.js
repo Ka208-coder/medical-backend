@@ -3,7 +3,6 @@ import { createSlug } from "../utils/slug.js";
 
 export const AddAsset = async (req, res) => {
   try {
-
     const {
       name,
       description,
@@ -15,9 +14,10 @@ export const AddAsset = async (req, res) => {
     } = req.body;
 
    
-    const thumbnail = req.files?.thumbnail?.[0]?.path || null;
-    const images = req.files?.images?.map((file) => file.path) || [];
+    const thumbnailFile = req.files?.thumbnail?.[0];
+    const imageFiles = req.files?.images || [];
 
+    
     if (
       !name ||
       !description ||
@@ -26,16 +26,25 @@ export const AddAsset = async (req, res) => {
       !purchasePrice ||
       !category ||
       !unit ||
-      !thumbnail ||
-      images.length === 0
+      !thumbnailFile ||
+      imageFiles.length === 0
     ) {
       return res.status(400).json({ message: "All fields are required" });
     }
+   
+
+    const thumbnail = `${process.env.baseUrl}/${thumbnailFile.path.replace(/\\/g, "/")}`;
+    const images = imageFiles.map((file) =>
+      `${process.env.baseUrl}/${file.path.replace(/\\/g, "/")}`
+    );
 
     const slug = createSlug(name);
+
     const existing = await Asset.findOne({ slug });
     if (existing) {
-      return res.status(400).json({ message: "Asset with similar name already exists" });
+      return res
+        .status(400)
+        .json({ message: "Asset with similar name already exists" });
     }
 
     const userId = req.user?.id;
@@ -49,8 +58,8 @@ export const AddAsset = async (req, res) => {
       purchasePrice,
       category,
       unit,
-      images,       
-      thumbnail,   
+      images, 
+      thumbnail, 
       createdBy: userId,
     });
 
@@ -65,7 +74,6 @@ export const AddAsset = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 
 export const GetAssets = async (req, res) => {
