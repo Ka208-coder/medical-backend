@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
-
+import { errorresponse, successresponse } from "../services/Errorhandler.js";
 export const Signup = async (req, res) => {
   try {
     const { username, email, password, role } = req.body;
@@ -9,11 +9,9 @@ export const Signup = async (req, res) => {
 
     let existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "User already registered" });
+      return errorresponse(res, 400, "User already exists with this email");
     }
-
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const user = new User({
       username,
       email,
@@ -26,9 +24,7 @@ export const Signup = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
-
-    res.status(201).json({
-      message: "Signup successful",
+    return successresponse(res, 200, "Signup successful", {
       user: {
         id: user._id,
         username: user.username,
@@ -37,11 +33,9 @@ export const Signup = async (req, res) => {
       },
     });
 
-    console.log("User signup successful");
-
-  } catch (err) {
-    console.error("Error in signup:", err);
-    res.status(500).json({ message: "Something went wrong" });
+  } catch{
+    
+   return errorresponse(res, 500, "internal server");
   }
 };
 
@@ -51,11 +45,11 @@ export const login = async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "User not Registered" });
+      return errorresponse(res,400, "User not Registered");
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid email or password" });
+      return errorresponse(res,400, "Invalid email or password" );
     }
     const token = jwt.sign(
       { id: user._id, email: user.email, role: user.role },
@@ -63,20 +57,21 @@ export const login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    res.status(200).json({
-      message: "Login successful",
+    return successresponse(res,200,
+       "Login successful",{
       token,
       user: {
         id: user._id,
         username: user.username,
         email: user.email,
         role: user.role,
-      },
-    });
+      }
+    }
+    );
 
-  } catch (err) {
-    console.error("Error in login:", err);
-    res.status(500).json({ message: "Something went wrong" });
+  } catch {
+  
+  return errorresponse(res, 500, "internal server");
   }
 };
 
@@ -87,7 +82,7 @@ export const updateUser = async (req, res) => {
 
     const user = await User.findById(id);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return errorresponse(res,404, "User not found" );
     }
 
     user.username = username || user.username;
@@ -96,17 +91,16 @@ export const updateUser = async (req, res) => {
   
     await user.save();
 
-    res.status(200).json({
-      message: "User updated successfully",
+    return successresponse(res,200,
+      "User updated successfully",{
       user: {
         id: user._id,
         username: user.username,
         role: user.role,
       },
     });
-  } catch (err) {
-    console.error("Error in updateUser:", err);
-    res.status(500).json({ message: "Something went wrong" });
+  } catch  {
+    return errorresponse(res, 500, "internal server");
   }
 };
 
@@ -115,15 +109,13 @@ export const deleteUser = async (req, res) => {
     const {id} = req.params;
     const user = await User.findById(id);
     if (!user){
-      res.status(404).json({message: "User not found"});
+     return errorresponse(res,404, "User not found");
     }
     await user.deleteOne();
-    res.status(200).json({message: "User deleted successfully"});
-    console.log("User Deletes By Admin Side..........")
+    return successresponse(res,200, "User deleted successfully");
   }
-  catch (err) {
-    console.error("Error:", err);
-    res.status(500).json({message: "internal Server issues.............."});
+  catch {
+  return errorresponse(res, 500, "internal server");
   }
 };
 
@@ -131,21 +123,17 @@ export const deleteUser = async (req, res) => {
 export const getalluser = async (req, res) => {
   try {
     const users = await User.find().select("-password");
-    if (!users){
-      res.status(404).json({message: "User not found"});
+    if (!users || users.length === 0) {
+      return errorresponse(res, 404, "No users found");
     }
-
-    // console.log("user................",users);
-
-    res.status(200).json({
-      status: "success",
-      total:users.length,
-      users:users
+    return successresponse(res, 200, "Users fetched successfully", {
+      total: users.length,
+      users,
     });
+  } 
+  catch  {
+  
+   return errorresponse(res, 500, "internal server");
+  }
+};
 
-  }
-  catch (err) {
-    console.error("Error:", err);
-    res.status(500).json({message: "internal Server issues.............."});
-  }
-}
