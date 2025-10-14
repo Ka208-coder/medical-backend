@@ -239,8 +239,9 @@ export const checkmail = async (req, res) => {
 
     
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiry = Date.now() + 5 * 60 * 1000; // 5 min valid
+    const expiry = Date.now() + 5 * 60 * 1000; // 5 min 
 
+  //  console.log("OTP:", otp);
   
     user.resetOtp = otp;
     user.resetOtpExpire = expiry;

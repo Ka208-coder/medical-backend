@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import UserRoutes from "./src/routes/UserRoutes.js";
 import AssetsRoutes from "./src/Routes/AssetsRoutes.js";
-
+import "./src/services/cronjob.js"
 
 dotenv.config();
 
