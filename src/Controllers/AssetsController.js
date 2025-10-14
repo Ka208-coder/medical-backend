@@ -159,7 +159,9 @@ export const DeleteAsset = async (req, res) => {
       return errorresponse(res,404, "Asset not found");
     }
 
-    return successresponse(res, 200,"Asset deleted successfully");
+    return successresponse(res, 200,"Asset deleted successfully",
+      deleted
+    );
 
   } catch {
     return errorresponse(res,500,"internal server issue");
