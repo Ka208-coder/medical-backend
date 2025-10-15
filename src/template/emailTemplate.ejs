@@ -4,17 +4,32 @@
   <meta charset="UTF-8" />
   <title>Admin Report</title>
   <style>
-    body { font-family: Arial, sans-serif; color: #333; }
-    .container { padding: 20px; border: 1px solid #ddd; border-radius: 10px; }
+    body { font-family: Arial, sans-serif; color: #333; background: #f9f9f9; }
+    .container { 
+      max-width: 600px; 
+      margin: 30px auto; 
+      background: white; 
+      padding: 20px; 
+      border-radius: 10px; 
+      border: 1px solid #ddd;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
     h2 { color: #007bff; }
-    p { margin-bottom: 10px; }
+    ul { list-style: none; padding: 0; }
+    li { 
+      padding: 8px 0; 
+      border-bottom: 1px solid #eee;
+      font-size: 15px;
+    }
+    strong { color: #000; }
+    .footer { font-size: 13px; color: #888; margin-top: 20px; text-align: center; }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>📢 Admin Report</h2>
     <p>Hello Admin,</p>
-    <p>Here’s the latest data report:</p>
+    <p>Here’s your latest automated data report:</p>
 
     <ul>
       <% data.forEach(item => { %>
@@ -22,7 +37,9 @@
       <% }) %>
     </ul>
 
-    <p>Generated at: <%= new Date().toLocaleString() %></p>
+    <div class="footer">
+      <p>Generated at: <%= new Date().toLocaleString() %></p>
+    </div>
   </div>
 </body>
 </html>

@@ -192,8 +192,8 @@ export const resetPassword = async (req, res) => {
     user.resetOtp = undefined;
     user.resetOtpExpire = undefined;
 
-    await user.save({ validateBeforeSave: false });
-
+    await user.save();
+    // { validateBeforeSave: false }
     return successresponse(res, 200, "Password reset successful. Please login again.");
   } catch {
 
@@ -201,65 +201,31 @@ export const resetPassword = async (req, res) => {
   }
 };
 
-export const generateOtp = async (req, res) => {
+export const changePassword = async (req, res) => {
   try {
-    const { email } = req.body;
-
+    const { email, oldPassword, newPassword } = req.body;
     const user = await User.findOne({ email });
-    if (!user) return successresponse(res,400, "User not found");
+    if (!user)
+      return errorresponse(res,400,  "User not found" );
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
 
-    user.resetOtp = otp;
-    user.resetOtpExpire = Date.now() + 5 * 60 * 1000; // valid for 5 min
-    await user.save({ validateBeforeSave: false });
+    if (!isMatch)
+      return errorresponse(res,400,"Invalid old password" );
 
-    console.log("Generated OTP (Profile flow, testing only):", otp);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
 
-    return successresponse(res,200, "OTP generated successfully", otp ); 
-  } catch  {
-    ;
-    return errorresponse(res,500, "Something went wrong" );
+    await user.save();
+    return successresponse(res, 200, "Password changed successfully");
+
+  } catch {
+    return errorresponse(res, 500, "Something went wrong");
   }
-};
+}
 
-export const checkmail = async (req, res) => {
-  try {
-    const { email } = req.body;
-    console.log("Checkmail request for:", email);
 
-    if (!email) {
-      return errorresponse(res,400, "Email is required" );
-    }
 
-    const user = await User.findOne({ email });
-    if (!user) {
-      return errorresponse(res,404, "Email not found" );
-    }
-
-    
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiry = Date.now() + 5 * 60 * 1000; // 5 min 
-
-  //  console.log("OTP:", otp);
-  
-    user.resetOtp = otp;
-    user.resetOtpExpire = expiry;
-    await user.save({ validateBeforeSave: false });
-
-    
-    await sendOTP(user.email, otp);
-
-    return successresponse(res,200,
-       "OTP sent to your email",{
-      email: user.email,
-      otp,
-    });
-  } catch  {
- 
-    return(res, 500, "Something went wrong" );
-  }
-};
 
 
 

@@ -24,8 +24,6 @@ export const cronEmail = async (data) => {
       subject: "Automated Admin Report",
       html: htmlContent,
     });
-
-    console.log("✅ Report email sent successfully!");
   } catch (error) {
     console.error("❌ Error sending report:", error.message);
   }
