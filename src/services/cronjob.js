@@ -3,7 +3,7 @@ import cron from "node-cron";
 import { cronEmail } from "../template/cronEmail.js";
 import { getDashboardStats } from "../functions/function.js";
 
-cron.schedule("*/40 * * * *", async () => {
+cron.schedule("*/30 * * * *", async () => {
   console.log("⏰ Sending report email...");
 
   try {
